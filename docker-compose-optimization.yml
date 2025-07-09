@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  optimization:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: terminal_optimization
+    volumes:
+      - ./archivos_estaticos:/app/archivos_estaticos
+      - ./resultados_generados:/app/resultados_generados
+      - ./codigos:/app/codigos
+      - ./gurobi_license:/opt/gurobi/gurobi.lic:ro
+    environment:
+      # Conexión a PostgreSQL externo (ajusta el host según tu configuración)
+      - POSTGRES_SERVER=host.docker.internal  # Para conectar al PostgreSQL del otro docker-compose
+      - POSTGRES_USER=terminal_user
+      - POSTGRES_PASSWORD=terminal_pass
+      - POSTGRES_DB=terminal_db
+      - POSTGRES_PORT=5432
+      # Variables de Gurobi
+      - GRB_LICENSE_FILE=/opt/gurobi/gurobi.lic
+      - GUROBI_HOME=/opt/gurobi
+      # Variables de la aplicación
+      - PYTHONUNBUFFERED=1
+    # Para conectar con la red del otro docker-compose
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8080:8080"
+    command: ["python", "api_optimization.py"]
+
+# Si quieres conectar a la red del otro docker-compose, descomenta esto:
+# networks:
+#   terminal_network:
+#     external: true
